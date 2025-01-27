@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornada de Motoristas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+    
+        }
+        label, button {
+            margin-top: 10px;
+            display: block;
+        }
+        #data-container {
+            margin-top: 20px;
+        }
+        #download-link {
+            margin-top: 10px;
+            display: block;
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Consultar Jornada de Motorista</h1>
+    <label for="data">Escolha a data:</label>
+    <input type="date" id="data" name="data">
+    <button id="fetch-data">Buscar Dados</button>
+    <a id="download-link" style="display: none;">Baixar arquivo</a>
+
+    <div id="data-container"></div>
+
+    <script>
+        document.getElementById('fetch-data').addEventListener('click', async function() {
+            const dataInput = document.getElementById('data').value;
+            if (!dataInput) {
+                alert('Por favor, escolha uma data.');
+                return;
+            }
+
+            const url = `http://ccomobility.com.br/webservices/binder/wsconecta/JornadaMotoristaTXT?guidIdentificacao=ac9ab724-cfc2-4a6d-b7c7-5954500c0fc5&idEmpresa=48&dt=${dataInput}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar dados');
+                }
+                const data = await response.text();
+                
+                // dados no conteiner de data
+                document.getElementById('data-container').innerText = data;
+
+                // gerando o arquivo .txt e criando o link de download
+                const blob = new Blob([data], { type: 'text/plain' });
+                const urlBlob = URL.createObjectURL(blob);
+                const downloadLink = document.getElementById('download-link');
+                downloadLink.href = urlBlob;
+                downloadLink.download = `dados_motorista_${dataInput}.txt`;
+                downloadLink.style.display = 'block';
+                downloadLink.innerText = `Baixar arquivo ${dataInput}.txt`;
+            } catch (error) {
+                console.error(error);
+                document.getElementById('data-container').innerText = 'Erro ao carregar dados. Tente novamente.';
+                document.getElementById('download-link').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
